@@ -4,7 +4,6 @@ import time
 import pandas as pd
 
 # --- 1. CONFIGURATION: MODES & REALITIES ---
-# Each mode has specific stats and "Tags" that filter which questions they see.
 LIFE_PATHS = {
     "Student": {
         "salary": 0, "start_cash": 800, "debt": 40000, "kids": 0, 
@@ -21,11 +20,6 @@ LIFE_PATHS = {
         "fragility_start": 50, "desc": "High income, but alimony & kids drain it all.",
         "tags": ["parent", "legal", "everyday"]
     },
-    "Recession Survivor": {
-        "salary": 1500, "start_cash": 300, "debt": 10000, "kids": 0, 
-        "fragility_start": 65, "desc": "Economy crashed. Prices are high. Everyone is panic selling.",
-        "tags": ["crisis", "everyday", "survival"]
-    },
     "Broke & Broken": {
         "salary": 600, "start_cash": 50, "debt": 2000, "kids": 0, 
         "fragility_start": 68, "desc": "One bad move and it's over. Hardcore mode.",
@@ -33,7 +27,7 @@ LIFE_PATHS = {
     }
 }
 
-# --- 2. SCENARIO DATABASE (Tagged) ---
+# --- 2. SCENARIO DATABASE ---
 MASTER_DB = [
     # --- PARENT / DIVORCED ---
     {"title": "Custody Battle", "tags": ["parent", "legal"], "desc": "Ex demands more support money.", "inspect": "⚠️ LEGAL: Lawyer retainer is $2k. Representing self is free but risky.", "def_t": "Retainer Fee", "def_d": "Upfront cost for legal services.", "ops": [("Hire Lawyer ($2k)", "safe"), ("Represent Self", "gamble"), ("Ignore", "trap")], "ops_i": [("Pay Retainer", "safe"), ("Mediation ($200)", "smart"), ("Represent Self", "gamble")]},
@@ -45,7 +39,7 @@ MASTER_DB = [
 
     # --- SURVIVAL / UNEMPLOYED ---
     {"title": "The Job Interview", "tags": ["survival", "career"], "desc": "Interview across town. Uber is $40.", "inspect": "⚠️ ROI: The job pays $50k. The $40 is an investment.", "def_t": "Return on Investment", "def_d": "Spending money to make money.", "ops": [("Take Uber", "smart"), ("Walk (2hrs)", "trap"), ("Skip it", "trap")], "ops_i": [("Take Uber", "smart"), ("Bus ($2)", "safe"), ("Skip", "trap")]},
-    {"title": "Grocery Inflation", "tags": ["survival", "crisis"], "desc": "Eggs are $10. Milk is $8.", "inspect": "⚠️ SUBSTITUTE: Frozen veggies are cheaper and last longer.", "def_t": "Substitution Effect", "def_d": "Switching to cheaper alternatives when prices rise.", "ops": [("Buy Normal", "trap"), ("Check Sales", "inspect"), ("Fast", "gamble")], "ops_i": [("Buy Normal", "trap"), ("Buy Frozen/Bulk", "smart"), ("Fast", "gamble")]},
+    {"title": "Grocery Inflation", "tags": ["survival", "crisis", "everyday"], "desc": "Eggs are $10. Milk is $8.", "inspect": "⚠️ SUBSTITUTE: Frozen veggies are cheaper and last longer.", "def_t": "Substitution Effect", "def_d": "Switching to cheaper alternatives when prices rise.", "ops": [("Buy Normal", "trap"), ("Check Sales", "inspect"), ("Fast", "gamble")], "ops_i": [("Buy Normal", "trap"), ("Buy Frozen/Bulk", "smart"), ("Fast", "gamble")]},
 
     # --- EVERYDAY / GENERAL ---
     {"title": "Car Noise", "tags": ["everyday"], "desc": "Clunking sound. Mechanic wants $100 to look.", "inspect": "⚠️ DIY: It's likely just a loose shield.", "def_t": "Information Asymmetry", "def_d": "When the seller knows more than the buyer.", "ops": [("Pay $100", "safe"), ("YouTube It", "inspect"), ("Turn up Radio", "trap")], "ops_i": [("Pay Shop", "safe"), ("Fix Self ($0)", "smart"), ("Ignore", "trap")]},
@@ -76,7 +70,7 @@ class SolvencyEngine:
         
         # Logs
         self.history = []
-        self.intel_collected = [] # For the "Lesson Tab"
+        self.intel_collected = [] 
         
         # Deck Management
         self.full_deck = [s for s in MASTER_DB if any(t in s["tags"] for t in self.tags)]
@@ -106,7 +100,7 @@ class SolvencyEngine:
             delta_frag = 15
             msg = "❌ TRAP! Stress increased."
         elif choice_type == "smart":
-            delta_frag = -15 # Big relief for being smart
+            delta_frag = -15 
             msg = "🧠 SMART! Stress reduced."
         elif choice_type == "safe":
             delta_cash = -50
@@ -121,13 +115,14 @@ class SolvencyEngine:
                 delta_frag = 10
                 msg = "💀 LOST! Debt increased."
 
-        # 3. APPLY ECONOMICS (Expenses & Income)
+        # 3. APPLY ECONOMICS
         pay = random.randint(0, 1000) if self.salary == "var" else self.salary
+        # SCALING DIFFICULTY: Expenses grow with levels!
         expenses = int((200 + (self.kids * 150)) * self.expense_mult)
         
         self.cash += (delta_cash + pay - expenses)
         self.fragility += delta_frag
-        self.fragility = max(0, self.fragility) # Cannot go below 0 (triggers level up)
+        self.fragility = max(0, self.fragility) 
         
         # Log History & Intel
         self.history.insert(0, f"Wk {self.week}: {msg} (Fragility {delta_frag})")
@@ -140,16 +135,16 @@ class SolvencyEngine:
         if self.fragility >= self.fragility_max:
             return "game_over", "🤯 MENTAL BREAKDOWN! Fragility hit 70%. Game Over."
         
-        if self.cash < -500: # Allow small overdraft
+        if self.cash < -500: 
              return "game_over", "💸 BANKRUPT! Cash is too low."
 
         # 5. CHECK LEVEL UP
         if self.fragility == 0:
             self.level += 1
             self.fragility = 30 # Reset to mid-stress
-            self.expense_mult += 0.2 # INFLATION!
+            self.expense_mult += 0.25 # INFLATION SPIKE (+25% Difficulty)
             self.week = 1
-            return "level_up", f"🚀 LEVEL {self.level}! Difficulty Increased (Inflation +20%)"
+            return "level_up", f"🚀 LEVEL {self.level}! Inflation is rising (+25% Expenses)"
 
         # 6. NEXT TURN
         self.week += 1
@@ -160,14 +155,6 @@ class SolvencyEngine:
 
 # --- 4. STREAMLIT UI ---
 st.set_page_config(page_title="Solvency: Pressure Cooker", page_icon="🔥", layout="wide")
-
-# Custom CSS for "Fun" Vibe
-st.markdown("""
-<style>
-    .stMetric { background-color: #1E1E1E; padding: 10px; border-radius: 10px; border: 1px solid #333; }
-    .css-1v0mbdj { margin-top: -50px; }
-</style>
-""", unsafe_allow_html=True)
 
 if "game" not in st.session_state: st.session_state.game = None
 if "inspected" not in st.session_state: st.session_state.inspected = False
@@ -191,12 +178,12 @@ with st.sidebar:
             if pay_amt <= g.cash:
                 g.cash -= pay_amt
                 g.debt -= pay_amt
-                g.fragility = max(0, g.fragility - 5) # Paying debt relieves stress!
+                g.fragility = max(0, g.fragility - 5) 
                 st.toast("Payment Successful! Stress -5", icon="💳")
-                if g.fragility == 0: # Check instant level up
+                if g.fragility == 0: 
                     g.level += 1
                     g.fragility = 30
-                    g.expense_mult += 0.2
+                    g.expense_mult += 0.25
                     st.balloons()
                 st.rerun()
             else:
@@ -219,13 +206,11 @@ if st.session_state.game:
     c1.metric("Cash", f"${int(g.cash)}")
     c2.metric("Debt", f"${g.debt}", delta_color="inverse")
     
-    # Fragility Bar (The Main Mechanic)
     frag_ratio = min(g.fragility / g.fragility_max, 1.0)
-    bar_color = "red" if g.fragility > 50 else "green"
     c3.metric("Fragility (Risk)", f"{g.fragility}%", help="Get this to 0 to advance!")
     st.progress(frag_ratio, text=f"Mental Stress: {g.fragility}/70 (Game Over at 70)")
 
-    # 2. TABS (Play vs Intel)
+    # 2. TABS
     tab_play, tab_intel = st.tabs(["🎮 Decisions", "🧠 Intel & Lessons"])
     
     with tab_play:
@@ -263,12 +248,21 @@ if st.session_state.game:
                 if "SMART" in txt: st.toast(txt, icon="🧠")
                 if "SAFE" in txt: st.toast(txt, icon="🛡️")
 
+        # FIX: ADDED UNIQUE KEYS (key=...) TO PREVENT UNCLICKABLE BUTTONS
+        btn_key_base = f"btn_{g.level}_{g.week}_{st.session_state.inspected}"
+        
         with col1: 
-            if st.button(ops_src[indices[0]][0], use_container_width=True): click(0); st.rerun()
+            if st.button(ops_src[indices[0]][0], key=f"{btn_key_base}_0", use_container_width=True): 
+                click(0)
+                st.rerun()
         with col2: 
-            if st.button(ops_src[indices[1]][0], use_container_width=True): click(1); st.rerun()
+            if st.button(ops_src[indices[1]][0], key=f"{btn_key_base}_1", use_container_width=True): 
+                click(1)
+                st.rerun()
         with col3: 
-            if st.button(ops_src[indices[2]][0], use_container_width=True): click(2); st.rerun()
+            if st.button(ops_src[indices[2]][0], key=f"{btn_key_base}_2", use_container_width=True): 
+                click(2)
+                st.rerun()
 
     with tab_intel:
         st.subheader("📚 Financial Encyclopedia")
@@ -283,11 +277,9 @@ if st.session_state.game:
 else:
     st.markdown("## 👋 Welcome to Solvency")
     st.markdown("""
-    This isn't just a game. It's a **stress simulator**.
-    
     * **Goal:** Reduce your `Fragility` (Stress) to **0%** to level up.
     * **Lose:** Hit **70%** Fragility and you breakdown.
-    * **Modes:** Different realities have different problems.
+    * **Difficulty:** Inflation rises 25% every level.
     
     👈 **Select a Reality in the sidebar to start.**
     """)
