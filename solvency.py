@@ -3,7 +3,7 @@ import random
 import time
 
 # --- 1. CONFIGURATION ---
-WEEKS_PER_LEVEL = 10 
+WEEKS_PER_LEVEL = 12 # Extended to 12 so you get exactly 3 Bill Cycles per level
 
 # --- 2. THE MALL ---
 SHOP_ITEMS = {
@@ -12,24 +12,24 @@ SHOP_ITEMS = {
     "Chegg/AI Subscription": {"cost": 80, "effect": "luck", "val": 0.15, "desc": "🤖 +15% Luck on Gambles."},
 }
 
-# --- 3. LIFESTYLE OPTIONS (YOU CONTROL THIS) ---
+# --- 3. LIFESTYLE OPTIONS ---
 HOUSING_OPTS = {
-    "Mom's Basement": {"cost": 0, "stress": 10, "desc": "Free, but zero privacy."},
+    "Mom's Basement": {"cost": 0, "stress": 10, "desc": "Free, but zero privacy (+10 Stress)."},
     "Shared Dorm": {"cost": 100, "stress": 0, "desc": "Standard student living."},
-    "Studio Apt": {"cost": 300, "stress": -5, "desc": "Expensive, but peaceful."}
+    "Studio Apt": {"cost": 300, "stress": -5, "desc": "Expensive, but peaceful (-5 Stress)."}
 }
 
 JOB_OPTS = {
-    "Unemployed": {"pay": 0, "stress": -5, "desc": "Focus on school. Low stress, no money."},
+    "Unemployed": {"pay": 0, "stress": -5, "desc": "Focus on school. Low stress."},
     "Library Aide": {"pay": 100, "stress": 5, "desc": "Easy work, low pay."},
     "Barista": {"pay": 200, "stress": 15, "desc": "Fast paced, decent cash."},
     "Bartender": {"pay": 350, "stress": 25, "desc": "High cash, EXTREME stress."}
 }
 
 FOOD_OPTS = {
-    "Beans & Rice": {"cost": 20, "stress": 10, "desc": "Survival mode. High stress."},
+    "Beans & Rice": {"cost": 20, "stress": 10, "desc": "Survival mode (+10 Stress)."},
     "Home Cooking": {"cost": 60, "stress": 0, "desc": "Balanced and standard."},
-    "Takeout/Delivery": {"cost": 150, "stress": -5, "desc": "Convenient but pricey."}
+    "Takeout/Delivery": {"cost": 150, "stress": -5, "desc": "Convenient but pricey (-5 Stress)."}
 }
 
 # --- 4. SCENARIO POOL ---
@@ -52,10 +52,6 @@ MASTER_DB = [
      "ops": [("Go Wild", "trap"), ("Check Cover", "inspect"), ("One Drink", "safe")], 
      "ops_i": [("VIP ($100)", "trap"), ("Stay In ($0)", "smart"), ("Water Only ($20)", "safe")]},
 
-    {"title": "The Roommate", "desc": "Roommate keeps eating your snacks.", "inspect": "⚠️ CONFLICT: A mini-fridge costs $50.", "def_t": "Asset Protection", "def_d": "Spending to secure your property.", 
-     "ops": [("Buy Fridge", "safe"), ("Check Rules", "inspect"), ("Hide Food", "smart")], 
-     "ops_i": [("Fridge ($50)", "safe"), ("Yell at them", "trap"), ("Hide Under Bed", "smart")]},
-
     {"title": "Credit Card Stall", "desc": "Free T-shirt if you sign up for a card!", "inspect": "⚠️ TRAP: 25% APR and annual fees.", "def_t": "Predatory Lending", "def_d": "Lending with unfair terms.", 
      "ops": [("Sign Up", "trap"), ("Read Terms", "inspect"), ("Walk Away", "smart")], 
      "ops_i": [("Get Shirt (Debt)", "trap"), ("Read Fine Print", "smart"), ("Walk Away", "smart")]},
@@ -68,10 +64,6 @@ MASTER_DB = [
      "ops": [("Pay All", "safe"), ("Check Usage", "inspect"), ("Fight Roommates", "gamble_stress")], 
      "ops_i": [("Pay All", "safe"), ("Demand Split", "gamble_stress"), ("Call Utility", "smart")]},
 
-    {"title": "Car Booted", "desc": "Parked in wrong zone. $100 fine.", "inspect": "⚠️ APPEAL: The sign was covered by a bush.", "def_t": "Bureaucracy", "def_d": "Navigating complex rules.", 
-     "ops": [("Pay Now", "safe"), ("Check Sign", "inspect"), ("Saw it off", "trap")], 
-     "ops_i": [("Pay ($100)", "safe"), ("Appeal w/ Photo", "smart"), ("Destroy Boot", "trap")]},
-
     {"title": "Grocery Inflation", "desc": "Eggs are $8. Meat is expensive.", "inspect": "⚠️ SUBSTITUTE: Frozen veggies/beans are cheap.", "def_t": "Substitution Effect", "def_d": "Switching to cheaper alternatives.", 
      "ops": [("Buy Normal", "trap"), ("Check Sales", "inspect"), ("Fast", "gamble")], 
      "ops_i": [("Buy Normal ($100)", "trap"), ("Rice & Beans ($20)", "smart"), ("Starve", "gamble")]},
@@ -79,14 +71,6 @@ MASTER_DB = [
     {"title": "Concert Tickets", "desc": "Fav band in town. Tickets $150.", "inspect": "⚠️ SCALPERS: Prices drop 1 hour before show.", "def_t": "Dynamic Pricing", "def_d": "Prices changing based on demand.", 
      "ops": [("Buy Now", "trap"), ("Check StubHub", "inspect"), ("Skip", "safe")], 
      "ops_i": [("Buy ($150)", "trap"), ("Buy Last Min ($50)", "smart"), ("Listen Spotify", "safe")]},
-
-    {"title": "Unpaid Internship", "desc": "Great resume booster. $0 pay.", "inspect": "⚠️ ROI: Leads to high paying job?", "def_t": "Opportunity Cost", "def_d": "Loss of income from paid work.", 
-     "ops": [("Take it", "gamble"), ("Check Reviews", "inspect"), ("Keep Job", "safe")], 
-     "ops_i": [("Work Free", "gamble"), ("Read Glassdoor", "smart"), ("Wait Tables", "safe")]},
-
-    {"title": "Laptop Crash", "desc": "Blue screen of death. Mid-terms.", "inspect": "⚠️ REPAIR: Campus IT fixes software free.", "def_t": "Repairability", "def_d": "Ease of fixing vs replacing.", 
-     "ops": [("Buy New Mac", "trap"), ("Check IT", "inspect"), ("YouTube Fix", "gamble")], 
-     "ops_i": [("Buy ($1200)", "trap"), ("IT Help", "smart"), ("DIY", "gamble")]},
 
     {"title": "Coffee Habit", "desc": "Starbucks daily adds up to $150/mo.", "inspect": "⚠️ LATTE FACTOR: Small daily costs compound.", "def_t": "Compound Cost", "def_d": "Small leaks sinking the ship.", 
      "ops": [("Keep Buying", "trap"), ("Check Budget", "inspect"), ("Cut Back", "safe")], 
@@ -104,7 +88,7 @@ class EndlessSim:
         self.week = 1
         self.inflation = 1.0 
         
-        # User Choices (Defaults)
+        # User Choices
         self.mode_housing = "Shared Dorm"
         self.mode_job = "Unemployed"
         self.mode_food = "Home Cooking"
@@ -112,7 +96,6 @@ class EndlessSim:
         self.inventory = []
         self.history = []
         self.intel = []
-        self.receipt = None
         
         self.buffs = {"resist": 0, "luck": 0.0, "transport": 0}
         
@@ -126,7 +109,39 @@ class EndlessSim:
         if self.level == 3: return "Expert (Prices +40%)"
         if self.level >= 4: return "NIGHTMARE (Prices Skyrocketing)"
 
+    def generate_bill_card(self):
+        # 1. Calculate Monthly Totals based on sidebar
+        house = HOUSING_OPTS[self.mode_housing]
+        food = FOOD_OPTS[self.mode_food]
+        job = JOB_OPTS[self.mode_job]
+        
+        # Monthly = Weekly * 4
+        m_rent = house["cost"] * 4 * self.inflation
+        m_food = food["cost"] * 4 * self.inflation
+        m_income = job["pay"] * 4 * self.inflation
+        
+        total_due = m_rent + m_food
+        
+        # Create a dynamic card
+        return {
+            "title": "📅 MONTHLY BILLS",
+            "desc": f"Rent and Grocery bills are due. Total: ${int(total_due)}.",
+            "inspect": f"BREAKDOWN: Housing (${int(m_rent)}) + Food (${int(m_food)}) - Income ($0 paid separately).",
+            "def_t": "Burn Rate",
+            "def_d": "The rate at which you spend money in excess of income.",
+            # Store the values in the card so we can access them in process_turn
+            "values": {"due": total_due, "income": m_income, "rent": m_rent},
+            "ops": [("Pay Full", "pay_full"), ("Use Credit", "pay_credit"), ("Skimp Food", "pay_skimp")],
+            "ops_i": [("Pay Full", "pay_full"), ("Use Credit (Debt)", "pay_credit"), ("Skimp (Stress)", "pay_skimp")]
+        }
+
     def draw_card(self):
+        # EVERY 4 WEEKS -> BILL CARD
+        if self.week % 4 == 0:
+            self.current_scen = self.generate_bill_card()
+            self.indices = [0, 1, 2] # No shuffle for bills, keep order
+            return
+
         if not self.full_deck:
             self.full_deck = MASTER_DB.copy()
             random.shuffle(self.full_deck)
@@ -141,11 +156,38 @@ class EndlessSim:
         c_type = scen["ops"][real_idx][1] if not st.session_state.inspected else scen["ops_i"][real_idx][1]
         
         d_cash = 0
+        d_debt = 0
         d_stress = 0
         msg = ""
         
-        # --- 1. EVENT CHOICE LOGIC ---
-        if c_type == "trap":
+        # --- SPECIAL: BILL PAYMENT LOGIC ---
+        if c_type in ["pay_full", "pay_credit", "pay_skimp"]:
+            # We add income FIRST (Monthly Paycheck)
+            monthly_income = scen["values"]["income"]
+            self.cash += monthly_income
+            
+            bill_total = scen["values"]["due"]
+            
+            if c_type == "pay_full":
+                d_cash = -bill_total
+                d_stress = -5 # Relief
+                msg = f"✅ PAID BILLS. (Income +${int(monthly_income)} | Bills -${int(bill_total)})"
+                
+            elif c_type == "pay_credit":
+                d_cash = 0 # Keep cash
+                d_debt = bill_total * 1.05 # Add to debt + 5% fee
+                d_stress = 10
+                msg = f"💳 CHARGED IT. (Income +${int(monthly_income)} | Debt +${int(d_debt)})"
+                
+            elif c_type == "pay_skimp":
+                # Pay rent only, skip food cost from total
+                rent_only = scen["values"]["rent"]
+                d_cash = -rent_only
+                d_stress = 20 # Hungry/Stressed
+                msg = f"🍜 SKIMPED. Paid Rent only. (Income +${int(monthly_income)} | Bills -${int(rent_only)})"
+
+        # --- STANDARD SCENARIO LOGIC ---
+        elif c_type == "trap":
             d_cash = -random.randint(100, 300) * self.inflation
             d_stress = 20 - self.buffs["resist"]
             msg = "❌ TRAP! Expensive."
@@ -156,7 +198,6 @@ class EndlessSim:
             d_cash = -50 * self.inflation
             d_stress = -5
             msg = "🛡️ SAFE. Small cost."
-        
         elif c_type == "gamble":
             if random.random() < (0.5 + self.buffs["luck"]):
                 d_stress = -20
@@ -165,7 +206,6 @@ class EndlessSim:
                 d_cash = -200 * self.inflation
                 d_stress = 10
                 msg = "💀 LOST! Money down the drain."
-
         elif c_type == "gamble_stress":
             if random.random() < (0.5 + self.buffs["luck"]):
                 d_stress = -20
@@ -175,59 +215,31 @@ class EndlessSim:
                 d_stress = 25 
                 msg = "💀 FAIL! Frustrating!"
 
+        # Apply Buffs
         if "transport" in scen["title"].lower(): d_cash += self.buffs["transport"]
         
-        # --- 2. LIFESTYLE CALCULATIONS (The "Control" Part) ---
+        # --- FINAL MATH ---
+        self.cash += d_cash
+        self.debt += d_debt
+        self.stress = min(100, max(0, self.stress + d_stress))
         
-        # GET SETTINGS
-        job_data = JOB_OPTS[self.mode_job]
-        house_data = HOUSING_OPTS[self.mode_housing]
-        food_data = FOOD_OPTS[self.mode_food]
-        
-        # INCOME
-        income = job_data["pay"] * self.inflation # Pay scales with inflation? Maybe. Let's say yes for balance.
-        
-        # EXPENSES
-        rent_cost = house_data["cost"] * self.inflation
-        food_cost = food_data["cost"] * self.inflation
-        fixed_expenses = rent_cost + food_cost
-        
-        # STRESS IMPACT
-        lifestyle_stress = job_data["stress"] + house_data["stress"] + food_data["stress"]
-        
-        # --- 3. FINAL MATH ---
-        net_change = d_cash + income - fixed_expenses
-        
-        self.cash += net_change
-        self.stress = min(100, max(0, self.stress + d_stress + lifestyle_stress))
-        
-        # --- 4. RECEIPT ---
-        self.receipt = {
-            "desc": msg,
-            "choice": int(d_cash),
-            "income": int(income),
-            "expenses": int(fixed_expenses),
-            "total": int(net_change)
-        }
-        
-        self.history.insert(0, f"Wk {self.week}: {msg} [Net: ${int(net_change)}]")
+        self.history.insert(0, f"Wk {self.week}: {msg}")
         
         intel_data = {"t": scen["def_t"], "d": scen["def_d"]}
         if intel_data not in self.intel: self.intel.append(intel_data)
 
         if self.stress >= self.stress_max:
             st.session_state.game_over = True
-            st.session_state.end_msg = f"🤯 BURNOUT! You lasted {self.week + ((self.level-1)*10)} weeks."
+            st.session_state.end_msg = f"🤯 BURNOUT! You lasted {self.week} weeks."
             return
         if self.cash < -1000:
             st.session_state.game_over = True
-            st.session_state.end_msg = f"💸 BANKRUPT! You lasted {self.week + ((self.level-1)*10)} weeks."
+            st.session_state.end_msg = f"💸 BANKRUPT! You lasted {self.week} weeks."
             return
 
         self.week += 1
-        if self.week > WEEKS_PER_LEVEL:
+        if self.week > WEEKS_PER_LEVEL * self.level: # Simple Level Scaling
             self.level += 1
-            self.week = 1
             self.inflation += 0.2
             st.session_state.level_up = True
             
@@ -246,7 +258,7 @@ class EndlessSim:
         return False
 
 # --- 6. UI SETUP ---
-st.set_page_config(page_title="Student Survival: Control", page_icon="🎛️", layout="wide")
+st.set_page_config(page_title="Student Survival: Monthly Bills", page_icon="📅", layout="wide")
 st.markdown("""<style>div.stButton > button { width: 100%; height: 60px; border-radius: 12px; font-weight: bold; }</style>""", unsafe_allow_html=True)
 
 if "game" not in st.session_state: st.session_state.game = None
@@ -256,8 +268,8 @@ if "level_up" not in st.session_state: st.session_state.level_up = False
 if "uid" not in st.session_state: st.session_state.uid = 0 
 
 if st.session_state.game is None:
-    st.title("🎛️ STUDENT SURVIVAL: CONTROL")
-    st.info("You control your job, your home, and your diet. Can you balance the budget?")
+    st.title("📅 STUDENT SURVIVAL: MONTHLY BILLS")
+    st.info("Play 3 weeks of life. Week 4 is BILL WEEK. Manage your settings in the sidebar.")
     if st.button("🚀 Start Run"):
         st.session_state.game = EndlessSim()
         st.rerun()
@@ -284,41 +296,36 @@ else:
     
     with st.sidebar:
         st.title(f"Level {g.level}")
-        st.caption(g.get_difficulty_desc())
         
         # --- LIFESTYLE DASHBOARD ---
         st.divider()
-        st.markdown("### 🎛️ Lifestyle Dashboard")
+        st.markdown("### 🎛️ Lifestyle Settings")
+        st.caption("These determine your bill on Week 4.")
         
-        # 1. JOB SELECTOR
-        new_job = st.selectbox("💼 Income Source", list(JOB_OPTS.keys()), index=list(JOB_OPTS.keys()).index(g.mode_job))
+        # 1. JOB
+        new_job = st.selectbox("💼 Job", list(JOB_OPTS.keys()), index=list(JOB_OPTS.keys()).index(g.mode_job))
         if new_job != g.mode_job: g.mode_job = new_job; st.rerun()
         
-        # 2. HOUSING SELECTOR
+        # 2. HOUSING
         new_house = st.selectbox("🏠 Housing", list(HOUSING_OPTS.keys()), index=list(HOUSING_OPTS.keys()).index(g.mode_housing))
         if new_house != g.mode_housing: g.mode_housing = new_house; st.rerun()
         
-        # 3. FOOD SELECTOR
-        new_food = st.selectbox("🍔 Food Plan", list(FOOD_OPTS.keys()), index=list(FOOD_OPTS.keys()).index(g.mode_food))
+        # 3. FOOD
+        new_food = st.selectbox("🍔 Food", list(FOOD_OPTS.keys()), index=list(FOOD_OPTS.keys()).index(g.mode_food))
         if new_food != g.mode_food: g.mode_food = new_food; st.rerun()
         
-        # --- REAL TIME BUDGET PREVIEW ---
+        # --- PREVIEW ---
         j = JOB_OPTS[g.mode_job]
         h = HOUSING_OPTS[g.mode_housing]
         f = FOOD_OPTS[g.mode_food]
         
-        est_inc = j["pay"] * g.inflation
-        est_exp = (h["cost"] + f["cost"]) * g.inflation
-        est_net = est_inc - est_exp
-        est_stress = j["stress"] + h["stress"] + f["stress"]
+        m_inc = j["pay"] * 4 * g.inflation
+        m_exp = (h["cost"] + f["cost"]) * 4 * g.inflation
         
         st.markdown(f"""
-        **Weekly Budget:**
-        * 🟢 Income: +${int(est_inc)}
-        * 🔴 Expenses: -${int(est_exp)}
-        * **Net Flow:** :{'green' if est_net >= 0 else 'red'}[${int(est_net)}]
-        
-        **Weekly Stress:** {est_stress:+}
+        **Monthly Projection:**
+        * Income: +${int(m_inc)}
+        * Bill Due: -${int(m_exp)}
         """)
         
         st.divider()
@@ -340,22 +347,16 @@ else:
     c1.metric("Cash", f"${int(g.cash)}")
     c2.metric("Debt", f"${g.debt}", delta_color="inverse")
     c3.metric("Inflation", f"{int((g.inflation-1)*100)}%")
-    c4.metric("Week", f"{g.week}/10")
     
-    # --- THE RECEIPT ---
-    if g.receipt:
-        st.divider()
-        r = g.receipt
-        r_col1, r_col2, r_col3, r_col4, r_col5 = st.columns(5)
-        r_col1.markdown(f"**Choice:** {r['choice']}")
-        r_col2.markdown(f"**Income:** :green[+{r['income']}]")
-        r_col3.markdown(f"**Bills:** :red[-{r['expenses']}]")
-        
-        total_color = "green" if r['total'] >= 0 else "red"
-        r_col4.markdown(f"**NET:** :{total_color}[${r['total']}]")
-        r_col5.caption(f"Last: {r['desc']}")
-    st.divider()
-
+    # Show "Weeks until Bill"
+    weeks_left = 4 - (g.week % 4)
+    if weeks_left == 4: weeks_left = 0 # Is Bill week
+    
+    if weeks_left == 0:
+        c4.error("🔴 BILL WEEK")
+    else:
+        c4.metric("Next Bill", f"in {weeks_left} wks")
+    
     # --- GAME TABS ---
     tab1, tab2 = st.tabs(["🎮 Play", "🧠 Notebook"])
     
@@ -388,6 +389,11 @@ else:
             if st.button(ops[idx[1]][0], key=f"b_{key_base}", use_container_width=True): handle_click(idx[1])
         with col_c:
             if st.button(ops[idx[2]][0], key=f"c_{key_base}", use_container_width=True): handle_click(idx[2])
+
+        st.divider()
+        st.caption("📜 History:")
+        for log in g.history[:3]:
+            st.text(log)
 
     with tab2:
         if not g.intel: st.info("Play to learn!")
