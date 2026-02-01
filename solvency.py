@@ -8,7 +8,7 @@ WEEKS_PER_LEVEL = 10
 
 # --- 2. THE MALL (PERMANENT UPGRADES) ---
 SHOP_ITEMS = {
-    "Noise Cancelling Headphones": {"cost": 150, "effect": "resist", "val": 5, "desc": "🎧 -5 Stress from bad events."},
+    "Headphones": {"cost": 150, "effect": "resist", "val": 5, "desc": "🎧 -5 Stress from bad events."},
     "Second-Hand Bike": {"cost": 100, "effect": "transport", "val": 20, "desc": "🚲 Reduces transport costs."},
     "Chegg/AI Subscription": {"cost": 80, "effect": "luck", "val": 0.15, "desc": "🤖 +15% Luck on Gambles."},
     "Meal Prep Containers": {"cost": 40, "effect": "food", "val": 10, "desc": "🍱 Reduces weekly food costs."},
