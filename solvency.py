@@ -252,3 +252,42 @@ if st.session_state.game:
                 st.snow()
                 time.sleep(3)
                 st.session_state.game = None
+            elif res == "level_up":
+                st.balloons()
+                st.success(txt)
+                st.session_state.inspected = False
+                time.sleep(2)
+            else:
+                st.session_state.inspected = False
+                if "TRAP" in txt: st.toast(txt, icon="❌")
+                if "SMART" in txt: st.toast(txt, icon="🧠")
+                if "SAFE" in txt: st.toast(txt, icon="🛡️")
+
+        with col1: 
+            if st.button(ops_src[indices[0]][0], use_container_width=True): click(0); st.rerun()
+        with col2: 
+            if st.button(ops_src[indices[1]][0], use_container_width=True): click(1); st.rerun()
+        with col3: 
+            if st.button(ops_src[indices[2]][0], use_container_width=True): click(2); st.rerun()
+
+    with tab_intel:
+        st.subheader("📚 Financial Encyclopedia")
+        if not g.intel_collected:
+            st.info("Play the game to unlock financial terms!")
+        else:
+            for item in g.intel_collected:
+                with st.expander(f"📌 {item['term']}"):
+                    st.write(item['def'])
+                    st.caption(f"Learned in: {item['scen']}")
+
+else:
+    st.markdown("## 👋 Welcome to Solvency")
+    st.markdown("""
+    This isn't just a game. It's a **stress simulator**.
+    
+    * **Goal:** Reduce your `Fragility` (Stress) to **0%** to level up.
+    * **Lose:** Hit **70%** Fragility and you breakdown.
+    * **Modes:** Different realities have different problems.
+    
+    👈 **Select a Reality in the sidebar to start.**
+    """)
