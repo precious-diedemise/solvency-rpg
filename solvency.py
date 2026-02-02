@@ -39,30 +39,77 @@ FOOD_OPTS = {
     "Takeout/Delivery": {"cost": 150, "stress": -5, "desc": "Convenient but pricey (-5 Stress)."}
 }
 
-# --- 5. SCENARIO POOL ---
+# --- 5. MASSIVE SCENARIO POOL (30+ Cards) ---
 MASTER_DB = [
-    # TYPE: GAMBLE_STRESS
-    {"title": "Subscription Audit", "desc": "You have Netflix, Hulu, HBO, Spotify...", "inspect": "⚠️ CHURN: You pay $80/mo. Cancel and rotate them.", "def_t": "Subscription Fatigue", "def_d": "Accumulating recurring small costs.", 
-     "ops": [("Keep All", "trap"), ("Audit Bills", "inspect"), ("Use Mom's", "gamble_stress")], 
-     "ops_i": [("Pay ($80/mo)", "trap"), ("Cancel All", "smart"), ("Use Mom's", "gamble_stress")]},
-
-    # TYPE: STANDARD SCENARIOS
-    {"title": "LinkedIn Premium", "desc": "Pop-up: 'See who viewed your profile' ($40/mo).", "inspect": "⚠️ VANITY: Recruiters will message you if they want you.", "def_t": "Vanity Metric", "def_d": "Data that looks good but means nothing.", 
-     "ops": [("Subscribe", "trap"), ("Check Price", "inspect"), ("Ignore", "smart")], 
-     "ops_i": [("Subscribe ($40)", "trap"), ("Free Trial", "gamble_stress"), ("Ignore ($0)", "smart")]},
-
+    # --- ACADEMIC & CAREER ---
     {"title": "Textbook Racket", "desc": "Prof says you NEED the 5th Edition ($300).", "inspect": "⚠️ TRICK: The library has a copy on reserve.", "def_t": "Planned Obsolescence", "def_d": "Forcing upgrades for profit.", 
      "ops": [("Buy New", "trap"), ("Check Library", "inspect"), ("PDF", "gamble")], 
      "ops_i": [("Buy New ($300)", "trap"), ("Use Reserve (Free)", "smart"), ("Rent ($40)", "safe")]},
 
+    {"title": "Unpaid Internship", "desc": "Great resume booster. $0 pay.", "inspect": "⚠️ ROI: Leads to high paying job?", "def_t": "Opportunity Cost", "def_d": "Loss of income from paid work.", 
+     "ops": [("Take it", "gamble"), ("Check Reviews", "inspect"), ("Keep Job", "safe")], 
+     "ops_i": [("Work Free", "gamble"), ("Read Glassdoor", "smart"), ("Wait Tables", "safe")]},
+
+    {"title": "Laptop Crash", "desc": "Blue screen of death. Mid-terms.", "inspect": "⚠️ REPAIR: Campus IT fixes software free.", "def_t": "Repairability", "def_d": "Ease of fixing vs replacing.", 
+     "ops": [("Buy New Mac", "trap"), ("Check IT", "inspect"), ("YouTube Fix", "gamble")], 
+     "ops_i": [("Buy ($1200)", "trap"), ("IT Help", "smart"), ("DIY", "gamble")]},
+     
+    {"title": "Plagiarism Checker", "desc": "Essay due. Check score on 'TurnItIn'?", "inspect": "⚠️ PRIVACY: Free sites sell your essay.", "def_t": "Data Mining", "def_d": "Free services selling user data.", 
+     "ops": [("Use Free Site", "trap"), ("Check Reviews", "inspect"), ("Submit Blind", "gamble_stress")], 
+     "ops_i": [("Use Free", "trap"), ("Campus Tool", "smart"), ("Submit Blind", "gamble_stress")]},
+
+    # --- SOCIAL & FOMO ---
     {"title": "Dorm Party", "desc": "Everyone is going. Cover is $20.", "inspect": "⚠️ FOMO: Social pressure is high.", "def_t": "Social Tax", "def_d": "Spending to maintain social standing.", 
      "ops": [("Go Wild", "trap"), ("Check Cover", "inspect"), ("One Drink", "safe")], 
      "ops_i": [("VIP ($100)", "trap"), ("Stay In ($0)", "smart"), ("Water Only ($20)", "safe")]},
 
+    {"title": "Spring Break", "desc": "Friends booking trip to Cabo ($800).", "inspect": "⚠️ PEER PRESSURE: Staycation is free.", "def_t": "Living Beyond Means", "def_d": "Spending to match wealthy peers.", 
+     "ops": [("Book It", "trap"), ("Check Bank", "inspect"), ("Road Trip", "safe")], 
+     "ops_i": [("Book ($800)", "trap"), ("Stay Home", "smart"), ("Camping ($100)", "safe")]},
+
+    {"title": "Dating App Gold", "desc": "No matches. Upgrade to Gold for $30/mo?", "inspect": "⚠️ ALGO: Apps hide matches to make you pay.", "def_t": "Freemium", "def_d": "Free product that charges for features.", 
+     "ops": [("Subscribe", "trap"), ("Check Algo", "inspect"), ("Stay Free", "smart")], 
+     "ops_i": [("Pay $30", "trap"), ("Update Bio", "smart"), ("Delete App", "safe")]},
+     
+    {"title": "Concert Tickets", "desc": "Fav band in town. Tickets $150.", "inspect": "⚠️ SCALPERS: Prices drop 1 hour before show.", "def_t": "Dynamic Pricing", "def_d": "Prices changing based on demand.", 
+     "ops": [("Buy Now", "trap"), ("Check StubHub", "inspect"), ("Skip", "safe")], 
+     "ops_i": [("Buy ($150)", "trap"), ("Buy Last Min ($50)", "smart"), ("Listen Spotify", "safe")]},
+
+    # --- FINANCIAL & BILLS ---
     {"title": "Credit Card Stall", "desc": "Free T-shirt if you sign up for a card!", "inspect": "⚠️ TRAP: 25% APR and annual fees.", "def_t": "Predatory Lending", "def_d": "Lending with unfair terms.", 
      "ops": [("Sign Up", "trap"), ("Read Terms", "inspect"), ("Walk Away", "smart")], 
      "ops_i": [("Get Shirt (Debt)", "trap"), ("Read Fine Print", "smart"), ("Walk Away", "smart")]},
 
+    {"title": "Crypto Bro", "desc": "Roommate says buy 'DogeMoon'.", "inspect": "⚠️ SCAM: It's a pump and dump scheme.", "def_t": "Speculation", "def_d": "High risk trading vs investing.", 
+     "ops": [("Invest $500", "trap"), ("Research", "inspect"), ("Ignore", "smart")], 
+     "ops_i": [("Invest", "trap"), ("Index Fund", "smart"), ("Laugh", "safe")]},
+
+    {"title": "Tax Refund?", "desc": "Email says you have a pending refund.", "inspect": "⚠️ PHISHING: Check the sender URL.", "def_t": "Phishing", "def_d": "Fake messages stealing info.", 
+     "ops": [("Click Link", "trap"), ("Check Sender", "inspect"), ("Ignore", "safe")], 
+     "ops_i": [("Enter SSN", "trap"), ("Delete Email", "smart"), ("Ignore", "safe")]},
+
+    {"title": "Subscription Audit", "desc": "You have Netflix, Hulu, HBO, Spotify...", "inspect": "⚠️ CHURN: You pay $80/mo. Cancel and rotate them.", "def_t": "Subscription Fatigue", "def_d": "Accumulating recurring small costs.", 
+     "ops": [("Keep All", "trap"), ("Audit Bills", "inspect"), ("Use Mom's", "gamble_stress")], 
+     "ops_i": [("Pay ($80/mo)", "trap"), ("Cancel All", "smart"), ("Use Mom's", "gamble_stress")]},
+
+    {"title": "Coffee Habit", "desc": "Starbucks daily adds up to $150/mo.", "inspect": "⚠️ LATTE FACTOR: Small daily costs compound.", "def_t": "Compound Cost", "def_d": "Small leaks sinking the ship.", 
+     "ops": [("Keep Buying", "trap"), ("Check Budget", "inspect"), ("Cut Back", "safe")], 
+     "ops_i": [("Buy ($150)", "trap"), ("Thermos ($0)", "smart"), ("Every other day ($70)", "safe")]},
+
+    # --- HEALTH & WELLNESS ---
+    {"title": "Gym Membership", "desc": "Fancy gym is $80/mo. Campus gym is crowded.", "inspect": "⚠️ COMMITMENT: You'll stop going in Feb.", "def_t": "Breakage", "def_d": "Revenue from unused services.", 
+     "ops": [("Sign Contract", "trap"), ("Check Campus", "inspect"), ("Jog Outside", "safe")], 
+     "ops_i": [("Pay ($80/mo)", "trap"), ("Campus (Free)", "smart"), ("Jog", "safe")]},
+
+    {"title": "Dental Pain", "desc": "Tooth hurts. Dentist is expensive.", "inspect": "⚠️ INFECTION: Waiting makes it a $2k Root Canal.", "def_t": "Preventative Care", "def_d": "Fixing problems early to save money.", 
+     "ops": [("Wait", "trap"), ("Check School", "inspect"), ("Clove Oil", "gamble")], 
+     "ops_i": [("Ignore", "trap"), ("Student Clinic ($)", "smart"), ("ER ($$$)", "trap")]},
+
+    {"title": "Sick Day", "desc": "Flu hitting hard. Shift starts in 1 hour.", "inspect": "⚠️ POLICY: Boss fires if you miss without note.", "def_t": "Presenteeism", "def_d": "Working while sick (low productivity).", 
+     "ops": [("Go to Work", "gamble_stress"), ("Check Policy", "inspect"), ("Call Out", "safe")], 
+     "ops_i": [("Work Sick", "gamble_stress"), ("Get Note ($30)", "safe"), ("Quit", "trap")]},
+
+    # --- HOUSING & EVERYDAY ---
     {"title": "Laundry Day", "desc": "Out of clean clothes. Machines cost $5.", "inspect": "⚠️ HACK: You can hand wash in the sink.", "def_t": "Labor Substitution", "def_d": "Trading time/effort to save money.", 
      "ops": [("Pay $5", "safe"), ("Check Sink", "inspect"), ("Wear Dirty", "gamble_stress")], 
      "ops_i": [("Pay", "safe"), ("Sink Wash", "smart"), ("Febreze It", "gamble_stress")]},
@@ -71,17 +118,21 @@ MASTER_DB = [
      "ops": [("Pay All", "safe"), ("Check Usage", "inspect"), ("Fight Roommates", "gamble_stress")], 
      "ops_i": [("Pay All", "safe"), ("Demand Split", "gamble_stress"), ("Call Utility", "smart")]},
 
+    {"title": "Car Booted", "desc": "Parked in wrong zone. $100 fine.", "inspect": "⚠️ APPEAL: The sign was covered by a bush.", "def_t": "Bureaucracy", "def_d": "Navigating complex rules.", 
+     "ops": [("Pay Now", "safe"), ("Check Sign", "inspect"), ("Saw it off", "trap")], 
+     "ops_i": [("Pay ($100)", "safe"), ("Appeal w/ Photo", "smart"), ("Destroy Boot", "trap")]},
+
     {"title": "Grocery Inflation", "desc": "Eggs are $8. Meat is expensive.", "inspect": "⚠️ SUBSTITUTE: Frozen veggies/beans are cheap.", "def_t": "Substitution Effect", "def_d": "Switching to cheaper alternatives.", 
      "ops": [("Buy Normal", "trap"), ("Check Sales", "inspect"), ("Fast", "gamble")], 
      "ops_i": [("Buy Normal ($100)", "trap"), ("Rice & Beans ($20)", "smart"), ("Starve", "gamble")]},
 
-    {"title": "Concert Tickets", "desc": "Fav band in town. Tickets $150.", "inspect": "⚠️ SCALPERS: Prices drop 1 hour before show.", "def_t": "Dynamic Pricing", "def_d": "Prices changing based on demand.", 
-     "ops": [("Buy Now", "trap"), ("Check StubHub", "inspect"), ("Skip", "safe")], 
-     "ops_i": [("Buy ($150)", "trap"), ("Buy Last Min ($50)", "smart"), ("Listen Spotify", "safe")]},
-
-    {"title": "Coffee Habit", "desc": "Starbucks daily adds up to $150/mo.", "inspect": "⚠️ LATTE FACTOR: Small daily costs compound.", "def_t": "Compound Cost", "def_d": "Small leaks sinking the ship.", 
-     "ops": [("Keep Buying", "trap"), ("Check Budget", "inspect"), ("Cut Back", "safe")], 
-     "ops_i": [("Buy ($150)", "trap"), ("Thermos ($0)", "smart"), ("Every other day ($70)", "safe")]},
+    {"title": "Parking Pass", "desc": "Semester pass is $300.", "inspect": "⚠️ CALC: Park & Ride bus is free.", "def_t": "Sunk Cost", "def_d": "Paying for convenience you don't need.", 
+     "ops": [("Buy Pass", "trap"), ("Check Bus", "inspect"), ("Risk Tickets", "gamble")], 
+     "ops_i": [("Buy Pass", "trap"), ("Bus (Free)", "smart"), ("Risk It", "gamble")]},
+     
+    {"title": "Moving Out", "desc": "Landlord claims you damaged the wall.", "inspect": "⚠️ DEPOSIT: Did you take photos when you moved in?", "def_t": "Security Deposit", "def_d": "Money held to cover damages.", 
+     "ops": [("Pay Damages", "safe"), ("Check Photos", "inspect"), ("Argue", "gamble_stress")], 
+     "ops_i": [("Pay ($200)", "safe"), ("Show Photos", "smart"), ("Threaten Court", "gamble")]},
 ]
 
 # --- 6. GAME ENGINE ---
