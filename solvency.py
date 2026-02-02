@@ -19,6 +19,12 @@ HOUSING_OPTS = {
     "Studio Apt": {"cost": 300, "stress": -5, "desc": "Expensive, but peaceful (-5 Stress)."}
 }
 
+FUNDING_OPTS = {
+    "Full Scholarship": {"debt": 0, "desc": "Lucky! You start with $0 Debt."},
+    "Partial Loan": {"debt": 10000, "desc": "Standard Federal Loans."},
+    "Private Loans": {"debt": 40000, "desc": "High interest, high stress start."}
+}
+
 JOB_OPTS = {
     "Unemployed": {"pay": 0, "stress": -5, "desc": "Focus on school. Low stress."},
     "Library Aide": {"pay": 100, "stress": 5, "desc": "Easy work, low pay."},
@@ -80,6 +86,13 @@ MASTER_DB = [
 # --- 5. GAME ENGINE ---
 class EndlessSim:
     def __init__(self):
+        self.funding = funding_source
+        # Set debt based on choice
+        self.debt = FUNDING_OPTS[funding_source]["debt"] 
+        
+        self.cash = 1000
+        # self.debt = 10000  <--- REMOVE THIS OLD LINE
+        # ... rest of your init code ...
         self.cash = 1000
         self.debt = 10000
         self.stress = 20
@@ -270,6 +283,8 @@ if "uid" not in st.session_state: st.session_state.uid = 0
 if st.session_state.game is None:
     st.title("📅 STUDENT SURVIVAL: MONTHLY BILLS")
     st.info("Play 3 weeks of life. Week 4 is BILL WEEK. Manage your settings in the sidebar.")
+    funding_choice = st.selectbox("How are you funding your education?", list(FUNDING_OPTS.keys()))
+    st.caption(FUNDING_OPTS[funding_choice]["desc"])
     if st.button("🚀 Start Run"):
         st.session_state.game = EndlessSim()
         st.rerun()
@@ -337,6 +352,37 @@ else:
                 if st.button(f"{name} (${item['cost']})", help=item['desc']):
                     if g.buy_item(name): st.rerun()
                     else: st.toast("Not enough cash!", icon="❌")
+
+        st.divider()
+        st.markdown("### 💸 Manage Debt")
+        
+        # Calculate 20% amount
+        pay_20 = int(g.debt * 0.2)
+        
+        col_d1, col_d2 = st.columns(2)
+        
+        with col_d1:
+            # Button to pay 20%
+            if st.button(f"Pay 20%\n(-${pay_20})"):
+                if g.cash >= pay_20 and g.debt > 0:
+                    g.cash -= pay_20
+                    g.debt -= pay_20
+                    st.toast(f"Paid down ${pay_20}!", icon="📉")
+                    st.rerun()
+                else:
+                    st.toast("Not enough cash or no debt!", icon="❌")
+
+        with col_d2:
+            # Button to clear ALL debt
+            if st.button("Pay ALL\n(Clear It)"):
+                if g.cash >= g.debt and g.debt > 0:
+                    g.cash -= g.debt
+                    g.debt = 0
+                    st.balloons()
+                    st.toast("YOU ARE DEBT FREE!", icon="🎉")
+                    st.rerun()
+                else:
+                    st.toast("You can't afford to clear it yet.", icon="❌")
         
         if st.button("🛑 Give Up"):
             st.session_state.game = None
