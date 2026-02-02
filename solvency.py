@@ -3,7 +3,7 @@ import random
 import time
 
 # --- 1. CONFIGURATION ---
-WEEKS_PER_LEVEL = 12 # Extended to 12 so you get exactly 3 Bill Cycles per level
+WEEKS_PER_LEVEL = 12 
 
 # --- 2. THE MALL ---
 SHOP_ITEMS = {
@@ -12,17 +12,18 @@ SHOP_ITEMS = {
     "Chegg/AI Subscription": {"cost": 80, "effect": "luck", "val": 0.15, "desc": "🤖 +15% Luck on Gambles."},
 }
 
-# --- 3. LIFESTYLE OPTIONS ---
-HOUSING_OPTS = {
-    "Mom's Basement": {"cost": 0, "stress": 10, "desc": "Free, but zero privacy (+10 Stress)."},
-    "Shared Dorm": {"cost": 100, "stress": 0, "desc": "Standard student living."},
-    "Studio Apt": {"cost": 300, "stress": -5, "desc": "Expensive, but peaceful (-5 Stress)."}
-}
-
+# --- 3. STARTING OPTIONS (FUNDING) ---
 FUNDING_OPTS = {
     "Full Scholarship": {"debt": 0, "desc": "Lucky! You start with $0 Debt."},
     "Partial Loan": {"debt": 10000, "desc": "Standard Federal Loans."},
     "Private Loans": {"debt": 40000, "desc": "High interest, high stress start."}
+}
+
+# --- 4. LIFESTYLE OPTIONS ---
+HOUSING_OPTS = {
+    "Mom's Basement": {"cost": 0, "stress": 10, "desc": "Free, but zero privacy (+10 Stress)."},
+    "Shared Dorm": {"cost": 100, "stress": 0, "desc": "Standard student living."},
+    "Studio Apt": {"cost": 300, "stress": -5, "desc": "Expensive, but peaceful (-5 Stress)."}
 }
 
 JOB_OPTS = {
@@ -38,7 +39,7 @@ FOOD_OPTS = {
     "Takeout/Delivery": {"cost": 150, "stress": -5, "desc": "Convenient but pricey (-5 Stress)."}
 }
 
-# --- 4. SCENARIO POOL ---
+# --- 5. SCENARIO POOL ---
 MASTER_DB = [
     # TYPE: GAMBLE_STRESS
     {"title": "Subscription Audit", "desc": "You have Netflix, Hulu, HBO, Spotify...", "inspect": "⚠️ CHURN: You pay $80/mo. Cancel and rotate them.", "def_t": "Subscription Fatigue", "def_d": "Accumulating recurring small costs.", 
@@ -83,18 +84,14 @@ MASTER_DB = [
      "ops_i": [("Buy ($150)", "trap"), ("Thermos ($0)", "smart"), ("Every other day ($70)", "safe")]},
 ]
 
-# --- 5. GAME ENGINE ---
+# --- 6. GAME ENGINE ---
 class EndlessSim:
-    def __init__(self):
+    def __init__(self, funding_source):
         self.funding = funding_source
-        # Set debt based on choice
-        self.debt = FUNDING_OPTS[funding_source]["debt"] 
+        self.cash = 1000
+        # Set Debt based on selection
+        self.debt = FUNDING_OPTS[funding_source]["debt"]
         
-        self.cash = 1000
-        # self.debt = 10000  <--- REMOVE THIS OLD LINE
-        # ... rest of your init code ...
-        self.cash = 1000
-        self.debt = 10000
         self.stress = 20
         self.stress_max = 100
         self.level = 1
@@ -270,8 +267,8 @@ class EndlessSim:
             return True
         return False
 
-# --- 6. UI SETUP ---
-st.set_page_config(page_title="Student Survival: Monthly Bills", page_icon="📅", layout="wide")
+# --- 7. UI SETUP ---
+st.set_page_config(page_title="Student Survival", page_icon="🎓", layout="wide")
 st.markdown("""<style>div.stButton > button { width: 100%; height: 60px; border-radius: 12px; font-weight: bold; }</style>""", unsafe_allow_html=True)
 
 if "game" not in st.session_state: st.session_state.game = None
@@ -281,12 +278,16 @@ if "level_up" not in st.session_state: st.session_state.level_up = False
 if "uid" not in st.session_state: st.session_state.uid = 0 
 
 if st.session_state.game is None:
-    st.title("📅 STUDENT SURVIVAL: MONTHLY BILLS")
-    st.info("Play 3 weeks of life. Week 4 is BILL WEEK. Manage your settings in the sidebar.")
+    st.title("🎓 STUDENT SURVIVAL SETUP")
+    
+    # 1. Ask for Funding
     funding_choice = st.selectbox("How are you funding your education?", list(FUNDING_OPTS.keys()))
     st.caption(FUNDING_OPTS[funding_choice]["desc"])
-    if st.button("🚀 Start Run"):
-        st.session_state.game = EndlessSim()
+    
+    st.divider()
+    
+    if st.button("🚀 Start Game"):
+        st.session_state.game = EndlessSim(funding_choice)
         st.rerun()
 
 elif st.session_state.game_over:
@@ -311,6 +312,7 @@ else:
     
     with st.sidebar:
         st.title(f"Level {g.level}")
+        st.caption(f"Funding: {g.funding}")
         
         # --- LIFESTYLE DASHBOARD ---
         st.divider()
@@ -352,17 +354,14 @@ else:
                 if st.button(f"{name} (${item['cost']})", help=item['desc']):
                     if g.buy_item(name): st.rerun()
                     else: st.toast("Not enough cash!", icon="❌")
-
+        
         st.divider()
         st.markdown("### 💸 Manage Debt")
         
-        # Calculate 20% amount
         pay_20 = int(g.debt * 0.2)
-        
         col_d1, col_d2 = st.columns(2)
         
         with col_d1:
-            # Button to pay 20%
             if st.button(f"Pay 20%\n(-${pay_20})"):
                 if g.cash >= pay_20 and g.debt > 0:
                     g.cash -= pay_20
@@ -373,7 +372,6 @@ else:
                     st.toast("Not enough cash or no debt!", icon="❌")
 
         with col_d2:
-            # Button to clear ALL debt
             if st.button("Pay ALL\n(Clear It)"):
                 if g.cash >= g.debt and g.debt > 0:
                     g.cash -= g.debt
@@ -391,7 +389,7 @@ else:
     # --- TOP METRICS ---
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Cash", f"${int(g.cash)}")
-    c2.metric("Debt", f"${g.debt}", delta_color="inverse")
+    c2.metric("Debt", f"${int(g.debt)}", delta_color="inverse")
     c3.metric("Inflation", f"{int((g.inflation-1)*100)}%")
     
     # Show "Weeks until Bill"
